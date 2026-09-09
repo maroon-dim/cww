@@ -4,29 +4,41 @@ const $=id=>document.getElementById(id);
 const surface=$('map-surface'),dialog=$('attack-dialog'),svgNS='http://www.w3.org/2000/svg';
 const bounds=boundsOf(israelGeometry);
 let width=innerWidth,height=innerHeight,base=fitCamera(bounds,width,height),camera={...base};
-let active=null,launchedAt=0,previousFocus=null,frame=0;
+let active=null,launchedAt=0,previousFocus=null,frame=0,closeTimer=null;
 const utc=()=>new Date().toISOString().slice(11,19);
 function addLine(text){const line=document.createElement('div');line.textContent=utc()+' [SIM] '+text;$('attack-log').append(line);while($('attack-log').children.length>3)$('attack-log').firstElementChild.remove();}
 function startSimulation(company){
   if(!company)throw new Error('Unknown simulation entity');
+  clearTimeout(closeTimer);dialog.classList.remove('is-closing');
   if(!dialog.open)previousFocus=document.activeElement;
   active=company;launchedAt=Date.now();$('active-company').textContent=company.name.toUpperCase()+' / VISUAL SIMULATION';
   $('elapsed').textContent='00:00';$('packets').textContent='0';$('phase').textContent='INITIALIZING';$('attack-log').replaceChildren();
   addLine('Visual sequence initialized: '+company.name);addLine('Synthetic channels online. External connections: 0.');
+  document.body.classList.add('simulation-active');
   if(!dialog.open)dialog.showModal();
   return {company:company.name,status:'visual simulation running',externalConnections:0};
 }
-dialog.addEventListener('close',()=>{active=null;previousFocus?.focus();});
-$('close').addEventListener('click',()=>dialog.close());$('reset').addEventListener('click',()=>dialog.close());
+function closeSimulation(){
+  if(!dialog.open||dialog.classList.contains('is-closing'))return;
+  document.body.classList.remove('simulation-active');
+  dialog.classList.add('is-closing');
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
+  closeTimer=setTimeout(()=>dialog.close(),650);
+}
+dialog.addEventListener('cancel',event=>{event.preventDefault();closeSimulation();});
+dialog.addEventListener('close',()=>{clearTimeout(closeTimer);dialog.classList.remove('is-closing');document.body.classList.remove('simulation-active');active=null;previousFocus?.focus();});
+$('close').addEventListener('click',closeSimulation);$('reset').addEventListener('click',closeSimulation);
 function svgElement(tag,attributes,parent){const element=document.createElementNS(svgNS,tag);for(const [key,value] of Object.entries(attributes))element.setAttribute(key,value);parent.append(element);return element;}
 const borderPaths=geometryRings(israelGeometry).map(ring=>ring.map(([lon,lat],i)=>(i?'L':'M')+project(lon,lat).join(',')).join(' ')+'Z');
 for(const d of borderPaths){svgElement('path',{d},$('borders'));svgElement('path',{d},$('border-glow'));}
 const markers=companies.map(company=>{
   const button=document.createElement('button');button.className='company-label';button.textContent=company.name;button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',company.name+' — start visual simulation');button.addEventListener('click',()=>startSimulation(company));$('labels').append(button);
   const pin=svgElement('g',{class:'company-pin','data-company':company.code},$('pins'));
+  if(company.code==='RF'){button.classList.add('featured');pin.classList.add('featured');}
   svgElement('circle',{r:12,class:'pin-halo'},pin);svgElement('circle',{r:4,class:'pin-core'},pin);svgElement('circle',{r:13,class:'pin-hit'},pin);
   pin.addEventListener('click',()=>{button.focus();startSimulation(company);});
   const leader=svgElement('path',{},$('leader-lines'));
+  if(company.code==='RF'){leader.classList.add('featured');svgElement('circle',{r:22,class:'featured-ring'},pin);}
   return {...company,button,pin,leader,point:project(company.lon,company.lat)};
 });
 function render(){

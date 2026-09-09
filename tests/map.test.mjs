@@ -9,7 +9,7 @@ test('geography fits desktop, phone, and landscape viewports',()=>{
     for(const point of [[bounds.minX,bounds.minY],[bounds.maxX,bounds.maxY]]){
       const [x,y]=toScreen(point,camera);assert.ok(x>=0&&x<=width);assert.ok(y>=0&&y<height-60);
     }
-    const labels=layoutLabels(companies.map(c=>{const [px,py]=toScreen(project(c.lon,c.lat),camera);return {...c,px,py,width:width<=600?145:230,height:c.name.length>22?58:44};}),width,height);
+    const labels=layoutLabels(companies.map(c=>{const [px,py]=toScreen(project(c.lon,c.lat),camera);return {...c,px,py,width:width<=600?145:230,height:c.code==='RF'||c.name.length>22?58:44};}),width,height);
     for(const label of labels){assert.ok(label.x>=0&&label.x+label.width<=width);assert.ok(label.y>=0&&label.y+label.height<height-65);}
     for(let i=0;i<labels.length;i++)for(let j=i+1;j<labels.length;j++){
       const a=labels[i],b=labels[j];const overlap=a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;
@@ -23,4 +23,15 @@ test('zoom preserves cursor location and respects limits',()=>{
   assert.ok(toScreen(point,next).every((value,i)=>Math.abs(value-anchor[i])<1e-8));
   assert.equal(zoomCamera(camera,100,anchor,camera.scale*.65,camera.scale*18).scale,camera.scale*18);
   assert.equal(zoomCamera(camera,.001,anchor,camera.scale*.65,camera.scale*18).scale,camera.scale*.65);
+});
+test('custom outline includes the West Bank without adding Gaza or an internal ring',()=>{
+  assert.equal(israelGeometry.coordinates.length,1);
+  const ring=israelGeometry.coordinates[0];
+  function contains([x,y]){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const [xi,yi]=ring[i],[xj,yj]=ring[j];
+    if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)inside=!inside;
+  }return inside;}
+  assert.ok(contains([35.2,31.9]));
+  assert.ok(contains([34.78,32.08]));
+  assert.equal(contains([34.45,31.5]),false);
 });
