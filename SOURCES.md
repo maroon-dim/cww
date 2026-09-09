@@ -1,0 +1,16 @@
+# Map and company location sources
+
+Checked 9 September 2026. Map pins represent approximate publicly listed company campus/contact locations. They are not surveyed headquarters-building coordinates. Postal addresses alone do not establish a precise building, and some map providers place a pin at a campus entrance. No address, city, or country labels appear in the interface.
+
+| Company | Published location and primary source | Map pin source |
+| --- | --- | --- |
+| Rafael | Haifa area: [company profile](https://www.linkedin.com/company/rafael-advanced-defense-systems-official/). The postal address is Haifa; the public company place listing is in Kiryat Bialik. Its exact headquarters building is not independently verified. | [Waze company listing](https://www.waze.com/ar/live-map/directions/rafael-advanced-defense-systems-%D7%A7%D7%A8%D7%99%D7%99%D7%AA-%D7%91%D7%99%D7%90%D7%9C%D7%99%D7%A7?to=place.w.23003465.230034647.367214) |
+| Elbit Systems | Advanced Technology Center, Haifa: [May 2026 corporate filing](https://www.sec.gov/Archives/edgar/data/1027664/000102766426000011/coveresltq120266k.htm) | [Waze company listing](https://www.waze.com/live-map/directions/il/haifa-district/haifa/elbit-systems-ltd?to=place.ChIJsflxcl27HRURIHvAucqtnXI) |
+| Israel Aerospace Industries | Ben Gurion International Airport, Lod: [official registered address](https://www.iai.co.il/privacy-policy/) | [Waze campus listing](https://www.waze.com/he/live-map/directions?from=place.w.22872384.228789377.458192); campus reference point, not an identified HQ building |
+| Israel Weapon Industries | 18 HaHaroshet Road, Kiryat Gat: [official contact page](https://he.iwi.net/contact-us/) | [Waze map-editor place link](https://www.waze.com/discuss/t/topic/308537); approximate campus pin |
+| Israel Shipyards | 53 Julius Simon Street, Haifa: [company-published certificate](https://www.israel-shipyards.com/appfiles/EnvironmentalPolicy-EN.pdf) | [Waze company-port listing at the same address](https://www.waze.com/live-map/directions?from=place.ChIJ62NmKg-6HRURNQhYjTaoI7c) |
+| Aeronautics | Yavne: [Ministry of Defense industry directory](https://www.sibat.mod.gov.il/Industries/Directory/Documents/Homeland%20Defense%20Directory.pdf). 10 Nachal Snir Street is the matching public business listing. | [Waze company listing](https://www.waze.com/live-map/directions/il/center-district/yavne/aeronautics-ltd.?to=place.ChIJ43zko46wAhURlG_fRolaGfM) |
+
+The geographic outline is the ISR feature from [Natural Earth's 1:10m Admin 0 countries GeoJSON](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_admin_0_countries.geojson), retrieved on 9 September 2026. Natural Earth data is public domain. The source's boundary conventions, including disputed areas, are preserved without modification; this is not a legal boundary determination. No surrounding country geometry or geographic labels are rendered.
+
+Company coordinates are manually transcribed from the public place metadata and use the same projection as the boundary. The screen-space labels are moved to prevent overlap; the underlying pins stay at their geographic coordinates. The app loads only bundled assets and does not contact company sites or map providers while running.

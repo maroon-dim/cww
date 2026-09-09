@@ -1,6 +1,6 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
-const routes = new Map([['/', ['index.html','text/html']], ['/index.html',['index.html','text/html']], ['/style.css',['style.css','text/css']], ['/app.js',['app.js','text/javascript']]]);
+const routes = new Map([['/', ['index.html','text/html']], ['/index.html',['index.html','text/html']], ['/style.css',['style.css','text/css']], ...['app.js','geography.js','map-model.js'].map(file=>['/'+file,[file,'text/javascript']])]);
 const port = Number(process.env.PORT || 3000);
 http.createServer(async (req,res) => {
   const route = routes.get(new URL(req.url,'http://localhost').pathname);

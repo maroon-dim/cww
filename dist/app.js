@@ -1,56 +1,78 @@
-const companies = [
-  {name:'Rafael',code:'RF',label:'Advanced Defense Systems',point:[334,155]},
-  {name:'Elbit Systems',code:'ES',label:'Defense technology',point:[348,178]},
-  {name:'Israel Aerospace Industries',code:'IAI',label:'Aerospace & defense',point:[301,263]},
-  {name:'Israel Weapon Industries',code:'IWI',label:'Defense manufacturing',point:[319,285]},
-  {name:'Israel Shipyards',code:'IS',label:'Naval systems',point:[323,171]},
-  {name:'Aeronautics',code:'AN',label:'Uncrewed aerial systems',point:[298,320]},
-];
-const $ = (id) => document.getElementById(id);
-const dialog = $('attack-dialog');
-let active = null, launchedAt = 0, previousFocus = null;
-const utc = () => new Date().toISOString().slice(11,19);
-function addLine(container,text,max=5){const line=document.createElement('div');const time=document.createElement('time');time.textContent=utc()+' ';line.append(time,document.createTextNode(text));container.append(line);while(container.children.length>max)container.firstElementChild.remove();}
+import {israelGeometry} from './geography.js';
+import {companies,project,boundsOf,geometryRings,fitCamera,toScreen,zoomCamera,layoutLabels} from './map-model.js';
+const $=id=>document.getElementById(id);
+const surface=$('map-surface'),dialog=$('attack-dialog'),svgNS='http://www.w3.org/2000/svg';
+const bounds=boundsOf(israelGeometry);
+let width=innerWidth,height=innerHeight,base=fitCamera(bounds,width,height),camera={...base};
+let active=null,launchedAt=0,previousFocus=null,frame=0;
+const utc=()=>new Date().toISOString().slice(11,19);
+function addLine(text){const line=document.createElement('div');line.textContent=utc()+' [SIM] '+text;$('attack-log').append(line);while($('attack-log').children.length>3)$('attack-log').firstElementChild.remove();}
 function startSimulation(company){
   if(!company)throw new Error('Unknown simulation entity');
   if(!dialog.open)previousFocus=document.activeElement;
-  active=company;launchedAt=Date.now();
-  $('active-company').textContent=company.name.toUpperCase()+' / VISUAL SIMULATION';
+  active=company;launchedAt=Date.now();$('active-company').textContent=company.name.toUpperCase()+' / VISUAL SIMULATION';
   $('elapsed').textContent='00:00';$('packets').textContent='0';$('phase').textContent='INITIALIZING';$('attack-log').replaceChildren();
-  addLine($('attack-log'),'[SIM] Visual sequence initialized: '+company.name,3);
-  addLine($('attack-log'),'[SIM] Synthetic channels online. External connections: 0.',3);
+  addLine('Visual sequence initialized: '+company.name);addLine('Synthetic channels online. External connections: 0.');
   if(!dialog.open)dialog.showModal();
-  addLine($('feed'),'Sequence started / '+company.code);
   return {company:company.name,status:'visual simulation running',externalConnections:0};
 }
-function stopSimulation(){if(dialog.open)dialog.close();}
 dialog.addEventListener('close',()=>{active=null;previousFocus?.focus();});
-$('close').addEventListener('click',stopSimulation);$('reset').addEventListener('click',stopSimulation);
-for(const company of companies){
-  const button=document.createElement('button');button.className='target';button.setAttribute('aria-haspopup','dialog');
-  const code=document.createElement('span');code.className='target-code';code.textContent=company.code;
-  const copy=document.createElement('span');const name=document.createElement('strong');name.textContent=company.name;const label=document.createElement('small');label.textContent=company.label;copy.append(name,label);
-  const arrow=document.createElement('span');arrow.className='target-arrow';arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');button.append(code,copy,arrow);button.addEventListener('click',()=>startSimulation(company));$('companies').append(button);
-  for(const [radius,cls] of [[11,'node-halo'],[3.5,'node-core']]){const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',company.point[0]);circle.setAttribute('cy',company.point[1]);circle.setAttribute('r',radius);circle.setAttribute('class',cls);$('map-nodes').append(circle);}
+$('close').addEventListener('click',()=>dialog.close());$('reset').addEventListener('click',()=>dialog.close());
+function svgElement(tag,attributes,parent){const element=document.createElementNS(svgNS,tag);for(const [key,value] of Object.entries(attributes))element.setAttribute(key,value);parent.append(element);return element;}
+const borderPaths=geometryRings(israelGeometry).map(ring=>ring.map(([lon,lat],i)=>(i?'L':'M')+project(lon,lat).join(',')).join(' ')+'Z');
+for(const d of borderPaths){svgElement('path',{d},$('borders'));svgElement('path',{d},$('border-glow'));}
+const markers=companies.map(company=>{
+  const button=document.createElement('button');button.className='company-label';button.textContent=company.name;button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',company.name+' — start visual simulation');button.addEventListener('click',()=>startSimulation(company));$('labels').append(button);
+  const pin=svgElement('g',{class:'company-pin','data-company':company.code},$('pins'));
+  svgElement('circle',{r:12,class:'pin-halo'},pin);svgElement('circle',{r:4,class:'pin-core'},pin);svgElement('circle',{r:13,class:'pin-hit'},pin);
+  pin.addEventListener('click',()=>{button.focus();startSimulation(company);});
+  const leader=svgElement('path',{},$('leader-lines'));
+  return {...company,button,pin,leader,point:project(company.lon,company.lat)};
+});
+function render(){
+  frame=0;
+  const transform='translate('+camera.x+' '+camera.y+') scale('+camera.scale+')';
+  $('borders').setAttribute('transform',transform);$('border-glow').setAttribute('transform',transform);
+  const visible=[];
+  for(const marker of markers){
+    const [px,py]=toScreen(marker.point,camera);const outside=px<0||px>width||py<0||py>height-70;
+    marker.button.hidden=outside;marker.pin.style.display=outside?'none':'';marker.leader.style.display=outside?'none':'';
+    marker.pin.setAttribute('transform','translate('+px+' '+py+')');
+    if(!outside)visible.push({...marker,px,py,width:marker.button.offsetWidth,height:marker.button.offsetHeight});
+  }
+  for(const label of layoutLabels(visible,width,height)){
+    label.button.style.transform='translate('+label.x+'px,'+label.y+'px)';
+    const endX=label.side>0?label.x:label.x+label.width,endY=label.y+label.height/2;
+    label.leader.setAttribute('d','M'+label.px+','+label.py+'L'+endX+','+endY);
+  }
+  $('zoom-in').disabled=camera.scale>=base.scale*18-.0001;$('zoom-out').disabled=camera.scale<=base.scale*.65+.0001;
 }
-for(let i=0;i<32;i++){const bar=document.createElement('span');bar.style.height=(18+Math.sin(i*1.3)**2*82)+'%';bar.style.animationDelay=(-i*.17)+'s';$('bars').append(bar);}
-const idleMessages=['Visual engine initialized','Regional overlay loaded','Synthetic channels synchronized','Local render buffer ready','Awaiting entity selection'];
-idleMessages.forEach(text=>addLine($('feed'),text));
+function schedule(){if(!frame)frame=requestAnimationFrame(render);}
+function fit(){camera={...base};schedule();}
+function zoom(factor,anchor=[width/2,height/2]){camera=zoomCamera(camera,factor,anchor,base.scale*.65,base.scale*18);schedule();}
+$('zoom-in').addEventListener('click',()=>zoom(1.4));$('zoom-out').addEventListener('click',()=>zoom(1/1.4));$('fit').addEventListener('click',fit);
+$('fullscreen').hidden=!document.fullscreenEnabled;
+$('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{}});
+document.addEventListener('fullscreenchange',()=>{const label=document.fullscreenElement?'Exit fullscreen':'Enter fullscreen';$('fullscreen').setAttribute('aria-label',label);$('fullscreen').title=label;});
+const controlTarget=target=>target.closest('button,[data-company],.map-controls');
+surface.addEventListener('wheel',event=>{if(controlTarget(event.target)||dialog.open)return;event.preventDefault();zoom(Math.exp(-event.deltaY*.0015),[event.clientX,event.clientY]);},{passive:false});
+surface.addEventListener('dblclick',event=>{if(!controlTarget(event.target))zoom(1.7,[event.clientX,event.clientY]);});
+const pointers=new Map();let gesture=null;
+function resetGesture(){const points=[...pointers.values()];gesture=points.length?{points,camera:{...camera}}:null;surface.classList.toggle('dragging',points.length>0);}
+surface.addEventListener('pointerdown',event=>{if(controlTarget(event.target)||event.button!==0||dialog.open)return;surface.focus({preventScroll:true});surface.setPointerCapture(event.pointerId);pointers.set(event.pointerId,[event.clientX,event.clientY]);resetGesture();});
+surface.addEventListener('pointermove',event=>{
+  if(!pointers.has(event.pointerId)||!gesture)return;pointers.set(event.pointerId,[event.clientX,event.clientY]);const points=[...pointers.values()];
+  if(points.length>=2&&gesture.points.length>=2){
+    const midpoint=pair=>[(pair[0][0]+pair[1][0])/2,(pair[0][1]+pair[1][1])/2];const distance=pair=>Math.hypot(pair[0][0]-pair[1][0],pair[0][1]-pair[1][1]);
+    const start=midpoint(gesture.points),now=midpoint(points);camera=zoomCamera(gesture.camera,distance(points)/Math.max(1,distance(gesture.points)),start,base.scale*.65,base.scale*18);camera.x+=now[0]-start[0];camera.y+=now[1]-start[1];
+  }else{camera={...gesture.camera,x:gesture.camera.x+points[0][0]-gesture.points[0][0],y:gesture.camera.y+points[0][1]-gesture.points[0][1]};}
+  schedule();
+});
+function endPointer(event){if(!pointers.delete(event.pointerId))return;resetGesture();}
+surface.addEventListener('pointerup',endPointer);surface.addEventListener('pointercancel',endPointer);surface.addEventListener('lostpointercapture',endPointer);
+surface.addEventListener('keydown',event=>{if(event.target!==surface||dialog.open)return;const pans={ArrowLeft:[55,0],ArrowRight:[-55,0],ArrowUp:[0,55],ArrowDown:[0,-55]};if(pans[event.key]){event.preventDefault();camera.x+=pans[event.key][0];camera.y+=pans[event.key][1];schedule();}else if(['+','=','-','Home'].includes(event.key)){event.preventDefault();if(event.key==='Home')fit();else zoom(event.key==='-'?1/1.4:1.4);}});
+new ResizeObserver(()=>{width=surface.clientWidth;height=surface.clientHeight;base=fitCamera(bounds,width,height);fit();}).observe(surface);
+render();
 const sequenceMessages=['Rendering synthetic packet stream','Compositing signal overlays','Cycling visual channels','Drawing simulated trace paths','Updating local animation buffer'];
-let tick=0;
-function update(){
-  $('clock').textContent=utc()+' UTC';tick++;
-  if(tick%4===0)addLine($('feed'),idleMessages[(tick/4)%idleMessages.length]);
-  if(!active)return;
-  const elapsed=Math.floor((Date.now()-launchedAt)/1000);
-  $('elapsed').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');
-  $('packets').textContent=(elapsed*1847).toLocaleString('en-US');
-  $('phase').textContent=elapsed<3?'INITIALIZING':elapsed<8?'SYNCHRONIZING':'RENDERING';
-  if(elapsed%2===0)addLine($('attack-log'),'[SIM] '+sequenceMessages[Math.floor(elapsed/2)%sequenceMessages.length],3);
-}
-update();setInterval(update,1000);
-if(document.modelContext?.registerTool){
-  const lifecycle=new AbortController();
-  try{Promise.resolve(document.modelContext.registerTool({name:'start_visual_simulation',description:'Open the fictional cyber animation for a selected company. No network actions occur.',inputSchema:{type:'object',properties:{company:{type:'string',enum:companies.map(c=>c.name)}},required:['company'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(!input||typeof input.company!=='string')throw new Error('A company name is required');const company=companies.find(c=>c.name===input.company);return startSimulation(company);}},{signal:lifecycle.signal})).catch(()=>{});}catch{}
-  window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
-}
+setInterval(()=>{if(!active)return;const elapsed=Math.floor((Date.now()-launchedAt)/1000);$('elapsed').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');$('packets').textContent=(elapsed*1847).toLocaleString('en-US');$('phase').textContent=elapsed<3?'INITIALIZING':elapsed<8?'SYNCHRONIZING':'RENDERING';if(elapsed%2===0)addLine(sequenceMessages[Math.floor(elapsed/2)%sequenceMessages.length]);},1000);
+if(document.modelContext?.registerTool){const lifecycle=new AbortController();try{Promise.resolve(document.modelContext.registerTool({name:'start_visual_simulation',description:'Open a fictional animation for a selected company. No network actions occur.',inputSchema:{type:'object',properties:{company:{type:'string',enum:companies.map(c=>c.name)}},required:['company'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(!input||typeof input.company!=='string')throw new Error('A company name is required');return startSimulation(companies.find(c=>c.name===input.company));}},{signal:lifecycle.signal})).catch(()=>{});}catch{}window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});}
