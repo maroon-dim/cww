@@ -34,6 +34,23 @@ dialog{width:min(1000px,95vw);max-height:95dvh;padding:0;border:1px solid #9c453
 #attack-dialog[open]:not(.is-closing) #attack-subtitle{animation:scene-reveal .7s .75s both}
 @keyframes scene-reveal{from{opacity:0;filter:blur(5px)}to{opacity:1;filter:blur(0)}}
 @keyframes title-interference{0%,100%{text-shadow:0 0 24px #ff68552a}25%{text-shadow:3px 0 #ff594477,-2px 0 #c4ffff44}50%{text-shadow:-2px 0 #ff594455,2px 0 #c4ffff33}75%{text-shadow:1px 0 #ff594455}}
+/* A one-shot startup disturbance; all overlays settle back to transparent. */
+#attack-title{position:relative}
+.glitch-copy{position:absolute;inset:0;pointer-events:none;opacity:0}
+.glitch-red{color:#ff514a;text-shadow:4px 0 #ff514a88}
+.glitch-cyan{color:#91e6e0;text-shadow:-4px 0 #91e6e088}
+#attack-dialog[open]:not(.is-closing) .glitch-red{animation:glitch-red-slices 700ms 650ms steps(1,end) both}
+#attack-dialog[open]:not(.is-closing) .glitch-cyan{animation:glitch-cyan-slices 800ms 700ms steps(1,end) both}
+#attack-dialog[open]:not(.is-closing) .attack-main{animation:signal-displacement 600ms 750ms steps(1,end) both}
+#attack-dialog .attack-layout:before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,transparent 0 24px,#ed786a18 24px 26px,transparent 26px 47px,#95ece411 47px 48px);clip-path:inset(25% 0 65%)}
+#attack-dialog .attack-layout:after{content:"";position:absolute;inset:0 0 auto;height:2px;z-index:3;pointer-events:none;opacity:0;background:#ff927866;box-shadow:0 0 18px #ff6c4455,0 13px 0 #a4e7dc22}
+#attack-dialog[open]:not(.is-closing) .attack-layout:before{animation:signal-tear 1100ms 350ms steps(1,end) both}
+#attack-dialog[open]:not(.is-closing) .attack-layout:after{animation:signal-sweep 1000ms 450ms ease-out both}
+@keyframes glitch-red-slices{0%,100%{opacity:0;transform:none;clip-path:inset(0)}15%{opacity:.7;transform:translateX(9px);clip-path:inset(16% 0 60%)}35%{opacity:.55;transform:translateX(-7px);clip-path:inset(60% 0 13%)}55%{opacity:.6;transform:translateX(5px);clip-path:inset(40% 0 42%)}80%{opacity:.25;transform:translateX(-2px);clip-path:inset(72% 0 10%)}}
+@keyframes glitch-cyan-slices{0%,100%{opacity:0;transform:none}15%{opacity:.5;transform:translateX(-8px);clip-path:inset(63% 0 15%)}40%{opacity:.45;transform:translateX(6px);clip-path:inset(22% 0 64%)}65%{opacity:.3;transform:translateX(-4px);clip-path:inset(45% 0 37%)}85%{opacity:.1;transform:translateX(2px);clip-path:inset(10% 0 80%)}}
+@keyframes signal-displacement{0%,100%{transform:none}20%{transform:translateX(-3px)}42%{transform:translateX(4px)}65%{transform:translateX(-2px)}82%{transform:translateX(1px)}}
+@keyframes signal-tear{0%,100%{opacity:0}15%{opacity:.65;clip-path:inset(12% 0 76%);transform:translateX(-5px)}35%{opacity:.45;clip-path:inset(44% 0 42%);transform:translateX(6px)}55%{opacity:.6;clip-path:inset(71% 0 18%);transform:translateX(-3px)}80%{opacity:.2;clip-path:inset(30% 0 60%);transform:none}}
+@keyframes signal-sweep{0%{opacity:0;top:8%}15%{opacity:.8}80%{opacity:.3}100%{opacity:0;top:90%}}
 .company-label.featured{min-width:145px;min-height:58px;font-size:20px;font-weight:700;letter-spacing:2px;color:#f0ffd6;border-color:#caff83;background:#243e17;box-shadow:0 0 25px #b9f77540,inset 0 0 20px #b9f7750d;animation:featured-glow 3s ease-in-out infinite;z-index:2}
 .company-label.featured:hover,.company-label.featured:focus-visible{background:#3d6023;color:#fff;border-color:#fff;box-shadow:0 0 45px #caff8377}
 .company-pin.featured .pin-core{r:6;fill:#efffc3;filter:drop-shadow(0 0 10px #d3ff82)}
