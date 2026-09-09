@@ -24,7 +24,7 @@ test('zoom preserves cursor location and respects limits',()=>{
   assert.equal(zoomCamera(camera,100,anchor,camera.scale*.65,camera.scale*18).scale,camera.scale*18);
   assert.equal(zoomCamera(camera,.001,anchor,camera.scale*.65,camera.scale*18).scale,camera.scale*.65);
 });
-test('custom outline includes the West Bank without adding Gaza or an internal ring',()=>{
+test('custom outline includes the West Bank and Gaza without an internal ring',()=>{
   assert.equal(israelGeometry.coordinates.length,1);
   const ring=israelGeometry.coordinates[0];
   function contains([x,y]){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){
@@ -33,5 +33,5 @@ test('custom outline includes the West Bank without adding Gaza or an internal r
   }return inside;}
   assert.ok(contains([35.2,31.9]));
   assert.ok(contains([34.78,32.08]));
-  assert.equal(contains([34.45,31.5]),false);
+  assert.ok(contains([34.45,31.5]));
 });
