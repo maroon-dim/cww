@@ -27,7 +27,7 @@ dialog.addEventListener('close',()=>{clearTimeout(closeTimer);dialog.classList.r
 $('close').addEventListener('click',closeSimulation);
 function svgElement(tag,attributes,parent){const element=document.createElementNS(svgNS,tag);for(const [key,value] of Object.entries(attributes))element.setAttribute(key,value);parent.append(element);return element;}
 const borderPaths=geometryRings(israelGeometry).map(ring=>ring.map(([lon,lat],i)=>(i?'L':'M')+project(lon,lat).join(',')).join(' ')+'Z');
-for(const d of borderPaths){svgElement('path',{d},$('borders'));svgElement('path',{d},$('border-glow'));}
+for(const d of borderPaths){svgElement('path',{d},$('borders'));svgElement('path',{d},$('border-glow'));svgElement('path',{d,class:'border-trace',pathLength:1000},$('borders'));}
 const markers=companies.map(company=>{
   const button=document.createElement('button');button.className=company.code==='RF'?'company-label':'company-dot';button.textContent=company.code==='RF'?company.name:'';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',company.name+' — start visual simulation');button.addEventListener('click',()=>startSimulation(company));$('labels').append(button);
   const pin=svgElement('g',{class:'company-pin','data-company':company.code},$('pins'));

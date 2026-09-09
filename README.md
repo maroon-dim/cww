@@ -25,3 +25,5 @@ Run `node --test tests/map.test.mjs` for geographic fitting, label-collision, an
 The `dist` folder also works with any static web host. `server.mjs` is the Node.js server for local use.
 
 Both screens have a local canvas particle network: green on the map and red on the attack panel. Nearby particles drift away from the pointer and form brighter connections. Touch movement also lights the network without intercepting map controls. Particle counts and pixel density are capped; animation pauses in hidden tabs. Reduced-motion mode keeps particles static with an immediate pointer glow.
+
+The cinematic treatment adds two depths of falling ASCII, cursor-lit glyphs, a traveling border highlight, Rafael corner brackets, and a staged attack-title reveal. Rain is capped at 90 columns and particle connections use spatial buckets. Mobile particle counts are capped at 100. All effects remain decorative and silent. Run `node --test tests/particles.test.mjs` for renderer lifecycle checks. Browser visual QA requires an available connected browser; none was available during this update.

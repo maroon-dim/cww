@@ -2,6 +2,7 @@
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const pointer = {x:0,y:0,active:false};
 const fields = [];
+const glyphs = '01<>[]{}:/\\+=#';
 let frame = 0, lastTime = 0;
 
 function createField(host, color, isDialog = false) {
@@ -11,7 +12,7 @@ function createField(host, color, isDialog = false) {
   host.prepend(canvas);
   const ctx = canvas.getContext('2d');
   if (!ctx) { canvas.remove(); return; }
-  const field = {host,canvas,ctx,color,isDialog,width:0,height:0,points:[]};
+  const field = {host,canvas,ctx,color,isDialog,width:0,height:0,points:[],rain:[]};
   fields.push(field);
   new ResizeObserver(() => {
     const width = host.clientWidth, height = host.clientHeight;
@@ -20,7 +21,15 @@ function createField(host, color, isDialog = false) {
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
     ctx.setTransform(ratio,0,0,ratio,0,0);
-    const count = Math.min(240, Math.max(60, Math.round(width * height / 6500)));
+    const count = Math.min(width<600?100:240, Math.max(60, Math.round(width * height / 6500)));
+    const columns = Math.min(90, Math.max(16, Math.floor(width / (width<600?24:19))));
+    field.rain = Array.from({length:columns},(_,i)=>{
+      const front=i%3===0,size=front?16:11;
+      return {x:(i+.5)*width/columns,y:Math.random()*(height+300),size,
+        speed:front?45+Math.random()*35:18+Math.random()*22,
+        length:front?16:24,alpha:front?.42:.17,
+        characters:Array.from({length:24},()=>glyphs[Math.floor(Math.random()*glyphs.length)])};
+    });
     field.points = Array.from({length:count}, () => ({
       x:Math.random()*width,y:Math.random()*height,
       vx:(Math.random()-.5)*13,vy:(Math.random()-.5)*13,
@@ -40,6 +49,20 @@ function drawField(field, dt) {
   const hover = pointer.active && mx>=0 && mx<=width && my>=0 && my<=height;
   const radius = Math.min(210, width*.42);
   ctx.clearRect(0,0,width,height);
+  ctx.textAlign='center';
+  for(const column of field.rain){
+    if(dt)column.y=(column.y+column.speed*dt)%(height+column.length*column.size);
+    const central=Math.exp(-Math.pow((column.x-width*.5)/(width*.24),2));
+    const baseAlpha=column.alpha*(1-central*(isDialog?.8:.68));
+    ctx.font=column.size+'px Consolas,monospace';
+    for(let n=0;n<column.length;n++){
+      const y=column.y-n*column.size;if(y<0||y>height)continue;
+      const energy=hover?Math.max(0,1-Math.hypot(column.x-mx,y-my)/radius):0;
+      const alpha=(1-n/column.length)*(baseAlpha+energy*.48);
+      ctx.fillStyle=n===0?`rgba(235,255,221,${Math.min(.85,alpha+.15)})`:`rgba(${color},${alpha})`;
+      ctx.fillText(column.characters[n],column.x,y);
+    }
+  }
   if (hover) {
     const glow = ctx.createRadialGradient(mx,my,0,mx,my,radius);
     glow.addColorStop(0,`rgba(${color},0.095)`);glow.addColorStop(1,`rgba(${color},0)`);
@@ -57,9 +80,18 @@ function drawField(field, dt) {
     return {x,y,r:p.r,energy:hover?Math.max(0,1-Math.hypot(x-mx,y-my)/radius):0};
   });
   const reach = width<600?105:145;
+  const buckets=new Map();
+  for(let i=0;i<displayed.length;i++){
+    const p=displayed[i],key=Math.floor(p.x/reach)+','+Math.floor(p.y/reach);
+    if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(i);
+  }
   for (let i=0;i<displayed.length;i++) {
     const a=displayed[i];
-    for (let j=i+1;j<displayed.length;j++) {
+    const bx=Math.floor(a.x/reach),by=Math.floor(a.y/reach);
+    const neighbors=[];
+    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)neighbors.push(...(buckets.get((bx+dx)+','+(by+dy))||[]));
+    for (const j of neighbors) {
+      if(j<=i)continue;
       const b=displayed[j],distance=Math.hypot(a.x-b.x,a.y-b.y);
       if (distance>reach) continue;
       ctx.strokeStyle=`rgba(${color},${(1-distance/reach)*(.14+Math.max(a.energy,b.energy)*.38)})`;
