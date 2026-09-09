@@ -4,16 +4,12 @@ const $=id=>document.getElementById(id);
 const surface=$('map-surface'),dialog=$('attack-dialog'),svgNS='http://www.w3.org/2000/svg';
 const bounds=boundsOf(israelGeometry);
 let width=innerWidth,height=innerHeight,base=fitCamera(bounds,width,height),camera={...base};
-let active=null,launchedAt=0,previousFocus=null,frame=0,closeTimer=null;
-const utc=()=>new Date().toISOString().slice(11,19);
-function addLine(text){const line=document.createElement('div');line.textContent=utc()+' [SIM] '+text;$('attack-log').append(line);while($('attack-log').children.length>3)$('attack-log').firstElementChild.remove();}
+let previousFocus=null,frame=0,closeTimer=null;
 function startSimulation(company){
   if(!company)throw new Error('Unknown simulation entity');
   clearTimeout(closeTimer);dialog.classList.remove('is-closing');
   if(!dialog.open)previousFocus=document.activeElement;
-  active=company;launchedAt=Date.now();$('active-company').textContent=company.name.toUpperCase()+' / VISUAL SIMULATION';
-  $('elapsed').textContent='00:00';$('packets').textContent='0';$('phase').textContent='INITIALIZING';$('attack-log').replaceChildren();
-  addLine('Visual sequence initialized: '+company.name);addLine('Synthetic channels online. External connections: 0.');
+  $('active-company').textContent=company.name.toUpperCase()+' / VISUAL SIMULATION';
   document.body.classList.add('simulation-active');
   if(!dialog.open)dialog.showModal();
   return {company:company.name,status:'visual simulation running',externalConnections:0};
@@ -26,8 +22,8 @@ function closeSimulation(){
   closeTimer=setTimeout(()=>dialog.close(),650);
 }
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeSimulation();});
-dialog.addEventListener('close',()=>{clearTimeout(closeTimer);dialog.classList.remove('is-closing');document.body.classList.remove('simulation-active');active=null;previousFocus?.focus();});
-$('close').addEventListener('click',closeSimulation);$('reset').addEventListener('click',closeSimulation);
+dialog.addEventListener('close',()=>{clearTimeout(closeTimer);dialog.classList.remove('is-closing');document.body.classList.remove('simulation-active');previousFocus?.focus();});
+$('close').addEventListener('click',closeSimulation);
 function svgElement(tag,attributes,parent){const element=document.createElementNS(svgNS,tag);for(const [key,value] of Object.entries(attributes))element.setAttribute(key,value);parent.append(element);return element;}
 const borderPaths=geometryRings(israelGeometry).map(ring=>ring.map(([lon,lat],i)=>(i?'L':'M')+project(lon,lat).join(',')).join(' ')+'Z');
 for(const d of borderPaths){svgElement('path',{d},$('borders'));svgElement('path',{d},$('border-glow'));}
@@ -85,6 +81,4 @@ surface.addEventListener('pointerup',endPointer);surface.addEventListener('point
 surface.addEventListener('keydown',event=>{if(event.target!==surface||dialog.open)return;const pans={ArrowLeft:[55,0],ArrowRight:[-55,0],ArrowUp:[0,55],ArrowDown:[0,-55]};if(pans[event.key]){event.preventDefault();camera.x+=pans[event.key][0];camera.y+=pans[event.key][1];schedule();}else if(['+','=','-','Home'].includes(event.key)){event.preventDefault();if(event.key==='Home')fit();else zoom(event.key==='-'?1/1.4:1.4);}});
 new ResizeObserver(()=>{width=surface.clientWidth;height=surface.clientHeight;base=fitCamera(bounds,width,height);fit();}).observe(surface);
 render();
-const sequenceMessages=['Rendering synthetic packet stream','Compositing signal overlays','Cycling visual channels','Drawing simulated trace paths','Updating local animation buffer'];
-setInterval(()=>{if(!active)return;const elapsed=Math.floor((Date.now()-launchedAt)/1000);$('elapsed').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');$('packets').textContent=(elapsed*1847).toLocaleString('en-US');$('phase').textContent=elapsed<3?'INITIALIZING':elapsed<8?'SYNCHRONIZING':'RENDERING';if(elapsed%2===0)addLine(sequenceMessages[Math.floor(elapsed/2)%sequenceMessages.length]);},1000);
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();try{Promise.resolve(document.modelContext.registerTool({name:'start_visual_simulation',description:'Open a fictional animation for a selected company. No network actions occur.',inputSchema:{type:'object',properties:{company:{type:'string',enum:companies.map(c=>c.name)}},required:['company'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute(input){if(!input||typeof input.company!=='string')throw new Error('A company name is required');return startSimulation(companies.find(c=>c.name===input.company));}},{signal:lifecycle.signal})).catch(()=>{});}catch{}window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});}
