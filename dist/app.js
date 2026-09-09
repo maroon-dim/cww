@@ -29,7 +29,7 @@ function svgElement(tag,attributes,parent){const element=document.createElementN
 const borderPaths=geometryRings(israelGeometry).map(ring=>ring.map(([lon,lat],i)=>(i?'L':'M')+project(lon,lat).join(',')).join(' ')+'Z');
 for(const d of borderPaths){svgElement('path',{d},$('borders'));svgElement('path',{d},$('border-glow'));}
 const markers=companies.map(company=>{
-  const button=document.createElement('button');button.className='company-label';button.textContent=company.name;button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',company.name+' — start visual simulation');button.addEventListener('click',()=>startSimulation(company));$('labels').append(button);
+  const button=document.createElement('button');button.className=company.code==='RF'?'company-label':'company-dot';button.textContent=company.code==='RF'?company.name:'';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',company.name+' — start visual simulation');button.addEventListener('click',()=>startSimulation(company));$('labels').append(button);
   const pin=svgElement('g',{class:'company-pin','data-company':company.code},$('pins'));
   if(company.code==='RF'){button.classList.add('featured');pin.classList.add('featured');}
   svgElement('circle',{r:12,class:'pin-halo'},pin);svgElement('circle',{r:4,class:'pin-core'},pin);svgElement('circle',{r:13,class:'pin-hit'},pin);
@@ -45,9 +45,10 @@ function render(){
   const visible=[];
   for(const marker of markers){
     const [px,py]=toScreen(marker.point,camera);const outside=px<0||px>width||py<0||py>height-70;
-    marker.button.hidden=outside;marker.pin.style.display=outside?'none':'';marker.leader.style.display=outside?'none':'';
+    marker.button.hidden=outside;marker.pin.style.display=outside?'none':'';marker.leader.style.display=outside||marker.code!=='RF'?'none':'';
     marker.pin.setAttribute('transform','translate('+px+' '+py+')');
-    if(!outside)visible.push({...marker,px,py,width:marker.button.offsetWidth,height:marker.button.offsetHeight});
+    if(!outside&&marker.code==='RF')visible.push({...marker,px,py,width:marker.button.offsetWidth,height:marker.button.offsetHeight});
+    else if(!outside)marker.button.style.transform='translate('+(px-14)+'px,'+(py-14)+'px)';
   }
   for(const label of layoutLabels(visible,width,height)){
     label.button.style.transform='translate('+label.x+'px,'+label.y+'px)';
