@@ -20,7 +20,7 @@ function createField(host, color, isDialog = false) {
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
     ctx.setTransform(ratio,0,0,ratio,0,0);
-    const count = Math.min(135, Math.max(28, Math.round(width * height / 12500)));
+    const count = Math.min(240, Math.max(60, Math.round(width * height / 6500)));
     field.points = Array.from({length:count}, () => ({
       x:Math.random()*width,y:Math.random()*height,
       vx:(Math.random()-.5)*13,vy:(Math.random()-.5)*13,
