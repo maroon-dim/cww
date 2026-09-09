@@ -6,6 +6,21 @@ const surface=$('map-surface'),dialog=$('attack-dialog'),svgNS='http://www.w3.or
 const bounds=boundsOf(israelGeometry);
 let width=innerWidth,height=innerHeight,base=fitCamera(bounds,width,height),camera={...base};
 let previousFocus=null,frame=0,closeTimer=null;
+const glitchLayer=document.createElement('div');
+glitchLayer.className='viewport-glitch';glitchLayer.setAttribute('popover','manual');glitchLayer.setAttribute('aria-hidden','true');
+document.body.append(glitchLayer);
+let glitchTimer=null;
+function stopGlitch(){clearTimeout(glitchTimer);document.body.classList.remove('glitching');if(glitchLayer.hidePopover&&glitchLayer.matches(':popover-open'))glitchLayer.hidePopover();glitchLayer.classList.remove('running');}
+function startGlitch(){
+  stopGlitch();if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  // A manual popover puts the decoration above the modal in the browser top layer.
+  // It cannot receive pointer events or focus, so the close control stays usable.
+  if(glitchLayer.showPopover)glitchLayer.showPopover();
+  void glitchLayer.offsetWidth;
+  glitchLayer.classList.add('running');document.body.classList.add('glitching');
+  glitchTimer=setTimeout(stopGlitch,1500);
+}
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',event=>{if(event.matches)stopGlitch();});
 function startSimulation(company){
   if(!company)throw new Error('Unknown simulation entity');
   clearTimeout(closeTimer);dialog.classList.remove('is-closing');
@@ -13,17 +28,19 @@ function startSimulation(company){
   $('active-company').textContent=company.name.toUpperCase()+' / VISUAL SIMULATION';
   document.body.classList.add('simulation-active');
   if(!dialog.open)dialog.showModal();
+  startGlitch();
   return {company:company.name,status:'visual simulation running',externalConnections:0};
 }
 function closeSimulation(){
   if(!dialog.open||dialog.classList.contains('is-closing'))return;
+  stopGlitch();
   document.body.classList.remove('simulation-active');
   dialog.classList.add('is-closing');
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){dialog.close();return;}
   closeTimer=setTimeout(()=>dialog.close(),650);
 }
 dialog.addEventListener('cancel',event=>{event.preventDefault();closeSimulation();});
-dialog.addEventListener('close',()=>{clearTimeout(closeTimer);dialog.classList.remove('is-closing');document.body.classList.remove('simulation-active');previousFocus?.focus();});
+dialog.addEventListener('close',()=>{stopGlitch();clearTimeout(closeTimer);dialog.classList.remove('is-closing');document.body.classList.remove('simulation-active');previousFocus?.focus();});
 $('close').addEventListener('click',closeSimulation);
 function svgElement(tag,attributes,parent){const element=document.createElementNS(svgNS,tag);for(const [key,value] of Object.entries(attributes))element.setAttribute(key,value);parent.append(element);return element;}
 const borderPaths=geometryRings(israelGeometry).map(ring=>ring.map(([lon,lat],i)=>(i?'L':'M')+project(lon,lat).join(',')).join(' ')+'Z');
