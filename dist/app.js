@@ -1,4 +1,5 @@
 import {israelGeometry} from './geography.js';
+import './particles.js';
 import {companies,project,boundsOf,geometryRings,fitCamera,toScreen,zoomCamera,layoutLabels} from './map-model.js';
 const $=id=>document.getElementById(id);
 const surface=$('map-surface'),dialog=$('attack-dialog'),svgNS='http://www.w3.org/2000/svg';

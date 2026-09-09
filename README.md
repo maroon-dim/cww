@@ -23,3 +23,5 @@ Rafael is highlighted with a larger illuminated label and an orbiting marker rin
 Run `node --test tests/map.test.mjs` for geographic fitting, label-collision, and zoom-anchor checks. Browser interaction and optional WebMCP integration have not been verified in a browser.
 
 The `dist` folder also works with any static web host. `server.mjs` is the Node.js server for local use.
+
+Both screens have a local canvas particle network: green on the map and red on the attack panel. Nearby particles drift away from the pointer and form brighter connections. Touch movement also lights the network without intercepting map controls. Particle counts and pixel density are capped; animation pauses in hidden tabs. Reduced-motion mode keeps particles static with an immediate pointer glow.
