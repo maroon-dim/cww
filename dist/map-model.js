@@ -1,17 +1,55 @@
 export const companies = [
-  {name:'Rafael',code:'RF',lon:35.09514,lat:32.86568,side:1,offset:-45},
-  {name:'Elbit Systems',code:'ES',lon:34.96177,lat:32.78832,side:-1,offset:35},
-  {name:'Israel Aerospace Industries',code:'IAI',lon:34.90492,lat:32.00494,side:1,offset:-20},
-  {name:'Israel Weapon Industries',code:'IWI',lon:34.78132,lat:31.58204,side:1,offset:35},
-  {name:'Israel Shipyards',code:'IS',lon:35.03310,lat:32.81351,side:-1,offset:-30},
-  {name:'Aeronautics',code:'AN',lon:34.73739,lat:31.89984,side:-1,offset:20},
+  {
+    "name": "HESA",
+    "code": "HESA",
+    "lon": 51.53,
+    "lat": 32.86,
+    "featured": true
+  },
+  {
+    "name": "Iran Electronics Industries",
+    "code": "IEI",
+    "lon": 52.53,
+    "lat": 29.59
+  },
+  {
+    "name": "Iran Aviation Industries Organization",
+    "code": "IAIO",
+    "lon": 51.39,
+    "lat": 35.69
+  },
+  {
+    "name": "SADRA",
+    "code": "SADRA",
+    "lon": 50.84,
+    "lat": 28.92
+  },
+  {
+    "name": "ISOICO",
+    "code": "ISOICO",
+    "lon": 56.27,
+    "lat": 27.18
+  },
+  {
+    "name": "Iran Tractor Manufacturing Company",
+    "code": "ITMCO",
+    "lon": 46.29,
+    "lat": 38.08
+  }
 ];
-// Public place pins, approximate campus locations, not surveyed HQ-building points.
-export const project = (lon,lat) => [(lon-35)*Math.cos(31.5*Math.PI/180)*200,(31.5-lat)*200];
+// Illustrative city-level locations, not facility coordinates.
+export const project = (lon,lat) => [(lon-54)*Math.cos(32*Math.PI/180)*200,(32-lat)*200];
 export const clamp = (value,min,max) => Math.min(max,Math.max(min,value));
 export function geometryRings(geometry){return geometry.type==='Polygon'?geometry.coordinates:geometry.coordinates.flat();}
 export function boundsOf(geometry){const points=geometryRings(geometry).flat().map(([lon,lat])=>project(lon,lat));return {minX:Math.min(...points.map(p=>p[0])),maxX:Math.max(...points.map(p=>p[0])),minY:Math.min(...points.map(p=>p[1])),maxY:Math.max(...points.map(p=>p[1]))};}
-export function fitCamera(bounds,width,height){const scale=Math.max(.05,Math.min((height-110)/(bounds.maxY-bounds.minY),(width-40)/(bounds.maxX-bounds.minX)));return {scale,x:width/2-(bounds.minX+bounds.maxX)/2*scale,y:(height-50)/2-(bounds.minY+bounds.maxY)/2*scale};}
+export function fitCamera(bounds,width,height,focus){
+  if(focus){
+    const x=width*.42,y=(height-70)*.5,padding=Math.min(36,width*.06);
+    const scale=Math.max(.0001,Math.min((x-padding)/(focus[0]-bounds.minX),(width-padding-x)/(bounds.maxX-focus[0]),(y-padding)/(focus[1]-bounds.minY),(height-90-y)/(bounds.maxY-focus[1])));
+    return {scale,x:x-focus[0]*scale,y:y-focus[1]*scale};
+  }
+  const scale=Math.max(.05,Math.min((height-110)/(bounds.maxY-bounds.minY),(width-40)/(bounds.maxX-bounds.minX)));return {scale,x:width/2-(bounds.minX+bounds.maxX)/2*scale,y:(height-50)/2-(bounds.minY+bounds.maxY)/2*scale};
+}
 export const toScreen = (point,camera) => [point[0]*camera.scale+camera.x,point[1]*camera.scale+camera.y];
 export function zoomCamera(camera,factor,anchor,minScale,maxScale){const scale=clamp(camera.scale*factor,minScale,maxScale);const ratio=scale/camera.scale;return {scale,x:anchor[0]-(anchor[0]-camera.x)*ratio,y:anchor[1]-(anchor[1]-camera.y)*ratio};}
 export function layoutLabels(items,width,height){

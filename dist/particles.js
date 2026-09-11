@@ -2,7 +2,7 @@
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const pointer = {x:0,y:0,active:false};
 const fields = [];
-const glyphs = '01<>[]{}:/\\+=#';
+const glyphs = '01<>[]{}:/\\+=#アイウエオカキクケコサシスセソ';
 let frame = 0, lastTime = 0;
 
 function createField(host, color, isDialog = false) {
@@ -12,7 +12,8 @@ function createField(host, color, isDialog = false) {
   host.prepend(canvas);
   const ctx = canvas.getContext('2d');
   if (!ctx) { canvas.remove(); return; }
-  const field = {host,canvas,ctx,color,isDialog,width:0,height:0,points:[],rain:[]};
+  const field = {host,canvas,ctx,color,isDialog,width:0,height:0,points:[],rain:[],quietZones:[]};
+  if(!isDialog)host.addEventListener('matrix-markers',event=>{field.quietZones=event.detail;requestDraw();});
   fields.push(field);
   new ResizeObserver(() => {
     const width = host.clientWidth, height = host.clientHeight;
@@ -21,14 +22,15 @@ function createField(host, color, isDialog = false) {
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
     ctx.setTransform(ratio,0,0,ratio,0,0);
-    const count = Math.min(width<600?100:240, Math.max(60, Math.round(width * height / 6500)));
-    const columns = Math.min(90, Math.max(16, Math.floor(width / (width<600?24:19))));
+    const count = Math.min(width<600?80:180, Math.max(40, Math.round(width * height / 8500)));
+    const columns = Math.min(90, Math.max(16, Math.floor(width / (width<600?26:14))));
     field.rain = Array.from({length:columns},(_,i)=>{
-      const front=i%3===0,size=front?16:11;
+      const layer=i%7===0?2:i%3===0?1:0;
+      const size=[10,13,17][layer];
       return {x:(i+.5)*width/columns,y:Math.random()*(height+300),size,
-        speed:front?45+Math.random()*35:18+Math.random()*22,
-        length:front?16:24,alpha:front?.42:.17,
-        characters:Array.from({length:24},()=>glyphs[Math.floor(Math.random()*glyphs.length)])};
+        layer,mutation:Math.random()*.18,speed:[18,40,65][layer]+Math.random()*20,
+        length:[28,22,16][layer],alpha:[.18,.35,.58][layer],
+        characters:Array.from({length:28},()=>glyphs[Math.floor(Math.random()*glyphs.length)])};
     });
     field.points = Array.from({length:count}, () => ({
       x:Math.random()*width,y:Math.random()*height,
@@ -41,25 +43,35 @@ function createField(host, color, isDialog = false) {
 }
 
 function drawField(field, dt) {
-  const {host,canvas,ctx,color,width,height,points,isDialog} = field;
+  const {host,canvas,ctx,width,height,points,isDialog} = field;
+  const era=document.body?.dataset?.era;
+  const color=era==='both-ai'?'112,181,255':field.color;
   if (!width || !height || (isDialog && !host.open)) return;
   // Rect is evaluated during rendering so the mouse stays aligned while the panel slides.
   const rect = canvas.getBoundingClientRect();
   const mx = pointer.x-rect.left, my = pointer.y-rect.top;
   const hover = pointer.active && mx>=0 && mx<=width && my>=0 && my<=height;
   const radius = Math.min(210, width*.42);
+  const phase=isDialog?host.dataset.phase:'idle',burst=phase==='burst';
   ctx.clearRect(0,0,width,height);
   ctx.textAlign='center';
   for(const column of field.rain){
-    if(dt)column.y=(column.y+column.speed*dt)%(height+column.length*column.size);
+    if(dt){
+      column.y=(column.y+column.speed*dt*(burst?2.4:1))%(height+column.length*column.size);
+      column.mutation+=dt;
+      if(column.mutation>.18){column.mutation=0;column.characters[Math.floor(Math.random()*column.length)]=glyphs[Math.floor(Math.random()*glyphs.length)];}
+    }
     const central=Math.exp(-Math.pow((column.x-width*.5)/(width*.24),2));
-    const baseAlpha=column.alpha*(1-central*(isDialog?.8:.68));
+    const baseAlpha=column.alpha*(1-central*(isDialog?.87:.35))*(burst?1.3:1);
+    const ink=isDialog&&column.layer===2&&(burst||phase==='complete')?(era==='both-ai'?'192,141,255':'106,213,255'):color;
     ctx.font=column.size+'px Consolas,monospace';
     for(let n=0;n<column.length;n++){
       const y=column.y-n*column.size;if(y<0||y>height)continue;
       const energy=hover?Math.max(0,1-Math.hypot(column.x-mx,y-my)/radius):0;
-      const alpha=(1-n/column.length)*(baseAlpha+energy*.48);
-      ctx.fillStyle=n===0?`rgba(235,255,221,${Math.min(.85,alpha+.15)})`:`rgba(${color},${alpha})`;
+      let quiet=1;
+      for(const zone of field.quietZones){const d=Math.hypot(column.x-zone.x,y-zone.y);if(d<zone.r+25)quiet=Math.min(quiet,.12+.88*Math.max(0,(d-zone.r)/25));}
+      const alpha=(1-n/column.length)*(baseAlpha+energy*.3)*quiet;
+      ctx.fillStyle=n===0?`rgba(206,234,255,${Math.min(.8,alpha+.12*quiet)})`:`rgba(${ink},${alpha})`;
       ctx.fillText(column.characters[n],column.x,y);
     }
   }
@@ -94,7 +106,7 @@ function drawField(field, dt) {
       if(j<=i)continue;
       const b=displayed[j],distance=Math.hypot(a.x-b.x,a.y-b.y);
       if (distance>reach) continue;
-      ctx.strokeStyle=`rgba(${color},${(1-distance/reach)*(.14+Math.max(a.energy,b.energy)*.38)})`;
+      ctx.strokeStyle=`rgba(${color},${(1-distance/reach)*(.065+Math.max(a.energy,b.energy)*.22)})`;
       ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     }
     if (a.energy>.15) {
@@ -122,10 +134,12 @@ window.addEventListener('pointerup',event=>{if(event.pointerType!=='mouse')clear
 window.addEventListener('pointercancel',clearPointer,{passive:true});
 document.documentElement.addEventListener('pointerleave',clearPointer);
 window.addEventListener('blur',clearPointer);
-document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frame);frame=0;lastTime=0;if(!document.hidden)requestDraw();});
+document.addEventListener('visibilitychange',()=>{document.documentElement.classList.toggle('page-hidden',document.hidden);cancelAnimationFrame(frame);frame=0;lastTime=0;if(!document.hidden)requestDraw();});
 motion.addEventListener('change',()=>{lastTime=0;for(const field of fields)for(const point of field.points){point.ox=0;point.oy=0;}requestDraw();});
-createField(document.getElementById('map-surface'),'173,235,130');
+createField(document.getElementById('map-surface'),'66,156,255');
 const dialog=document.getElementById('attack-dialog');
-createField(dialog,'255,111,91',true);
-new MutationObserver(requestDraw).observe(dialog,{attributes:true,attributeFilter:['open']});
+createField(dialog,'66,156,255',true);
+new MutationObserver(requestDraw).observe(dialog,{attributes:true,attributeFilter:['open','data-phase']});
 requestDraw();
+
+window.addEventListener('experience-era',requestDraw);

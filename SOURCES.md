@@ -1,16 +1,34 @@
-# Map and company location sources
+# Iran map and company sources
 
-Checked 9 September 2026. Map pins represent approximate publicly listed company campus/contact locations. They are not surveyed headquarters-building coordinates. Postal addresses alone do not establish a precise building, and some map providers place a pin at a campus entrance. No address, city, or country labels appear in the interface.
+Updated 11 September 2026. This is a fictional, visual-only simulation. Markers use rounded city-level coordinates to represent an associated headquarters or operating city, not individual facilities or precise addresses. Company logos do not imply affiliation. No real network actions occur.
 
-| Company | Published location and primary source | Map pin source |
+The Iran outline uses the IRN feature of [Natural Earth 1:10m Admin 0 countries](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_admin_0_countries.geojson), including its island polygons. Natural Earth data is public domain. Iran is rendered in red alongside the previous Israel demo outline in blue. The restored Israel outline is the earlier user-selected extent combining Israel, the West Bank, and Gaza without their shared internal boundaries; it is not an assertion of internationally recognized sovereignty. Both outlines use the same projection and fit together in the initial view.
+
+| Company | Representative city | Location source |
 | --- | --- | --- |
-| Rafael | Haifa area: [company profile](https://www.linkedin.com/company/rafael-advanced-defense-systems-official/). The postal address is Haifa; the public company place listing is in Kiryat Bialik. Its exact headquarters building is not independently verified. | [Waze company listing](https://www.waze.com/ar/live-map/directions/rafael-advanced-defense-systems-%D7%A7%D7%A8%D7%99%D7%99%D7%AA-%D7%91%D7%99%D7%90%D7%9C%D7%99%D7%A7?to=place.w.23003465.230034647.367214) |
-| Elbit Systems | Advanced Technology Center, Haifa: [May 2026 corporate filing](https://www.sec.gov/Archives/edgar/data/1027664/000102766426000011/coveresltq120266k.htm) | [Waze company listing](https://www.waze.com/live-map/directions/il/haifa-district/haifa/elbit-systems-ltd?to=place.ChIJsflxcl27HRURIHvAucqtnXI) |
-| Israel Aerospace Industries | Ben Gurion International Airport, Lod: [official registered address](https://www.iai.co.il/privacy-policy/) | [Waze campus listing](https://www.waze.com/he/live-map/directions?from=place.w.22872384.228789377.458192); campus reference point, not an identified HQ building |
-| Israel Weapon Industries | 18 HaHaroshet Road, Kiryat Gat: [official contact page](https://he.iwi.net/contact-us/) | [Waze map-editor place link](https://www.waze.com/discuss/t/topic/308537); approximate campus pin |
-| Israel Shipyards | 53 Julius Simon Street, Haifa: [company-published certificate](https://www.israel-shipyards.com/appfiles/EnvironmentalPolicy-EN.pdf) | [Waze company-port listing at the same address](https://www.waze.com/live-map/directions?from=place.ChIJ62NmKg-6HRURNQhYjTaoI7c) |
-| Aeronautics | Yavne: [Ministry of Defense industry directory](https://www.sibat.mod.gov.il/Industries/Directory/Documents/Homeland%20Defense%20Directory.pdf). 10 Nachal Snir Street is the matching public business listing. | [Waze company listing](https://www.waze.com/live-map/directions/il/center-district/yavne/aeronautics-ltd.?to=place.ChIJ43zko46wAhURlG_fRolaGfM) |
+| HESA | Shahin Shahr | [Company overview](https://en.wikipedia.org/wiki/Iran_Aircraft_Manufacturing_Industries_Corporation) |
+| Iran Electronics Industries | Shiraz operations | [Published company entries](https://www.treasury.gov/ofac/downloads/sdnew13.pdf) |
+| Iran Aviation Industries Organization | Tehran | [Published organization listing](https://www.mofa.go.jp/region/middle_e/iran/pdfs/measures_unsc_1009_annex1.pdf) |
+| SADRA | Bushehr shipbuilding operations | [Company overview](https://en.wikipedia.org/wiki/SADRA) |
+| ISOICO | Bandar Abbas region | [Islamic Development Bank project notice](https://www.isdb.org/project-procurement/tenders/2009/supply-and-installation-electrical-installations-graving-docks) |
+| Iran Tractor Manufacturing Company | Tabriz | [UN agricultural machinery directory](https://www.un-csam.org/images/bbsImage/IranAgmachine.pdf) |
 
-The geographic outline uses [Natural Earth's 1:10m Admin 0 countries GeoJSON](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_admin_0_countries.geojson), retrieved on 9 September 2026. Natural Earth data is public domain. At the user's request, this custom demo outline merges the ISR feature with the West Bank and Gaza polygons from the Palestine feature, removing their shared edges. This is a user-selected visual extent rather than an assertion of internationally recognized sovereignty. No surrounding country geometry or geographic labels are rendered.
+Logos are bundled locally. Logo provenance is recorded in dist/logos/sources.json. Markers stay centered on their map coordinates during pan and zoom; no connector lines or automatic geographic offsets are used.
 
-Company coordinates are manually transcribed from the public place metadata and use the same projection as the boundary. The screen-space labels are moved to prevent overlap; the underlying pins stay at their geographic coordinates. The app loads only bundled assets and does not contact company sites or map providers while running.
+## Regional context
+
+Lebanon, Syria, Jordan, Iraq, Saudi Arabia, Kuwait, and Turkey use their matching Natural Earth Admin 0 geometries, rendered as yellow outlines behind Israel and Iran. All countries share one geographic projection and camera; the fit control shows every displayed country with Israel near the horizontal center.
+
+The animated connections originate at an illustrative country-level point (35 E, 31.7 N) within Israel. Their paths, traffic pulses, and destinations are fictional simulation graphics, not observed traffic or claims of real attacks.
+
+## Concept headquarters
+The company-branded HQ scenes are original procedural architectural illustrations created in code for this exhibition. Building shapes are illustrative and do not represent surveyed or verified headquarters. No external 3D assets are used.
+
+## Globe land geometry
+Natural Earth 1:110m land polygons (public domain), bundled in dist/globe-land.js. Source: https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_land.geojson . Regional boundaries retain their existing sources and extent. The smooth sphere, lighting, and raised arcs are generated in local code. Land polygons provide a lighting mask; visible terrain comes from the satellite composite below.
+
+## Satellite surface
+NASA Earth Observatory, Blue Marble: Next Generation, Base Map, July 2004. Credit: NASA Earth Observatory. [Source page](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/). The [5400 x 2700 global source](https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/july/world.200407.3x5400x2700.jpg) is bundled unchanged as dist/textures/earth-blue-marble.jpg. The [21600 x 10800 source](https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/july/world.200407.3x21600x10800.jpg) supplies a native 2700 x 1800 regional crop covering 25–70 E and 18–48 N, stored as scripts/assets/earth-region-july.jpg. Its source hash, dimensions, and bounds are in the adjacent JSON file; scripts/extract-region.mjs reproduces the crop. The displayed surfaces preserve spatial satellite detail with blue color grading and mild local sharpening, generated offline by scripts/bake-globe.mjs and scripts/terrain-surface.mjs. The browser loads globe-terrain.png and a deferred globe-region-detail.png; the other texture files contain geography and city-light overlays. This is a historical monthly composite; local lighting, borders, city lights, and attack arcs are exhibition overlays.
+
+## City illumination
+City positions and relative population weights come from Natural Earth 1:50m populated places (1,251 entries, public domain): https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_50m_populated_places_simple.geojson . The bundled globe-cities.js retains longitude, latitude, and population weight. Street-like clusters, colors, halo sizes, and pulses are artistic effects, not satellite night imagery or observed network activity.

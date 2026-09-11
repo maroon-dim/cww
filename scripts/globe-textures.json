@@ -1,0 +1,47 @@
+{
+  "inputs": {
+    "scripts/bake-globe.mjs": "fa3248acd942bf4f862bd4e32eb71aa03522398b179d9068b3237b0de76eb470",
+    "scripts/terrain-surface.mjs": "3161cbdce77e65b91723a2e670ce7a376c66fe678020b43106a45713dbcb6f15",
+    "scripts/assets/earth-region-july.jpg": "cfc9ba58bf883a166b962846d0dff9a928f329ec770181f9b03703be83fd4f47",
+    "scripts/assets/earth-region-july.json": "f64df13496a5e709aafe7c51885e74d69bf0a991b7f5889732af3a09858c33c7",
+    "dist/globe.js": "8f6b1cdcf9576c16bcf3ba2d9d8281c8bab40922c72c81d1c2061265f4b43e8a",
+    "dist/globe-land.js": "781f88bde06bae451b554ac3eb08f47c45247819d556f86bac5155d38378277c",
+    "dist/globe-cities.js": "c59764e30efbb2a69acb0e259cb9a289dc67a377f77d052d557103c0769db9f3",
+    "dist/city-lights.js": "b8d2161e2046f1b1505d28bb25e7918d75f2d2c53ac448ea541347cc04f9ec4f",
+    "dist/geography.js": "114dc702492430c3260efe9b7df8bd11c11ef713d5d2bb65f88f5c78c42f1ae1",
+    "dist/map-model.js": "582b40c59336944c2d6b5cf97930f57e4682aa5a2d6630cd34fdb3152db173de",
+    "dist/textures/earth-blue-marble.jpg": "f55226d46d27e05511f2118dc6aa24f5dbf9b6b2cddc87cc6e0e7dd067c00b11"
+  },
+  "outputs": {
+    "dist/textures/globe-terrain.png": {
+      "width": 4096,
+      "height": 2048,
+      "bytes": 4739762,
+      "sha256": "09800294be679d5760eb71ca5fa4b000a0ad396e51f8f3853a77127c5f456fdb"
+    },
+    "dist/textures/globe-region-detail.png": {
+      "width": 2048,
+      "height": 2048,
+      "bytes": 4412728,
+      "sha256": "ce90dc6c124e7dabe36a2cf6ec46c13bf37d80025c70cddbfd601be67122d02f"
+    },
+    "dist/textures/globe-land-mask.png": {
+      "width": 2048,
+      "height": 1024,
+      "bytes": 163447,
+      "sha256": "3604db6e60c34a6fadb89b39fa0283291de82cf73029200a93cdda0d7a2fa781"
+    },
+    "dist/textures/globe-city-lights.png": {
+      "width": 2048,
+      "height": 1024,
+      "bytes": 224441,
+      "sha256": "bf225a6cbd2bd80105bd34b045f41cef11b83c28372d1d1986d9672980a9f690"
+    },
+    "dist/textures/globe-borders.png": {
+      "width": 2048,
+      "height": 1024,
+      "bytes": 34800,
+      "sha256": "9c5c03972a930536b6a86171e116dbeadc4c37f97c593ae8528b8e72ae939a9c"
+    }
+  }
+}
