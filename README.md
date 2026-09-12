@@ -71,3 +71,10 @@ The approach uses softer acceleration, gradual perspective travel, a restrained 
 ## Regenerating globe artwork
 
 The committed textures are generated using the development-only @napi-rs/canvas renderer. After changing terrain, city-light artwork, geography, or country styling, run `npm ci` and `npm run bake:globe`. To regenerate the regional source crop, download the NASA source recorded in scripts/assets/earth-region-july.json and run `node scripts/extract-region.mjs <downloaded-file>`. Tests verify the texture dimensions, source hashes, preservation of fine detail, crop coordinates, and colored borders. These build steps never run in the visitor browser. Base RGBA texture storage is 56 MiB at startup and 72 MiB after regional detail loads, excluding mipmaps and driver overhead. The asynchronous loading path and lightweight startup rendering budget remain in place; browser-wide startup latency has not been profiled after this upgrade.
+
+הוקם חשבון מייל של GMAIL בשםMGoapX20@avenixmail.com
+סיסמא
+d91Xb9LDz4cUB0It
+הוקם חשבון Open Ai Pro X20
+תחת אותם פרטי מייל מהסעיף הקודם.
+השירות יהיה פעיל עד לתאריך Oct 9, 2026
