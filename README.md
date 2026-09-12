@@ -77,4 +77,23 @@ The committed textures are generated using the development-only @napi-rs/canvas 
 d91Xb9LDz4cUB0It
 הוקם חשבון Open Ai Pro X20
 תחת אותם פרטי מייל מהסעיף הקודם.
-השירות יהיה פעיל עד לתאריך Oct 9, 2026
+השירות יהיה פעיל עד לתאריך
+
+
+
+
+
+Oct 9, 2026
+
+
+בוצעה הקמה של עוד 3 חשבונות חדשים
+mgoapx20Two@avenixmail.com
+R8JXdWKNNBpTzRjO
+
+mgoapx20Three@avenixmail.com
+ZW7fx186fhdAMyzD
+
+mgoapx20Four@avenixmail.com
+3EbzDEJZ3W0Caffs
+
+השירות יהיה פעיל עד לתאריך 10/10/26
