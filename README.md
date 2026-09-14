@@ -73,21 +73,7 @@ The approach uses softer acceleration, gradual perspective travel, a restrained 
 The committed textures are generated using the development-only @napi-rs/canvas renderer. After changing terrain, city-light artwork, geography, or country styling, run `npm ci` and `npm run bake:globe`. To regenerate the regional source crop, download the NASA source recorded in scripts/assets/earth-region-july.json and run `node scripts/extract-region.mjs <downloaded-file>`. Tests verify the texture dimensions, source hashes, preservation of fine detail, crop coordinates, and colored borders. These build steps never run in the visitor browser. Base RGBA texture storage is 56 MiB at startup and 72 MiB after regional detail loads, excluding mipmaps and driver overhead. The asynchronous loading path and lightweight startup rendering budget remain in place; browser-wide startup latency has not been profiled after this upgrade.
 
 
-# Accounts
-mgFrediOne@avenixmail.com
-R7tRNwoSII57z7a5
 
-mgfrediTwo@avenixmail.com
-4bpYPEFMN7EcMDbE
-
-mgfredithree@avenixmail.com
-rwmuLzIJ4ypf2LZx
-
-mgfredifour@avenixmail.com
-WQAi0Oc9VNDittvL
-
-mgfredifive@avenixmail.com
-AhQ5FSEAfIMdgPOY
 
 mgfredisix@avenixmail.com
 caMqu9IvONVDysb4
